@@ -3,10 +3,10 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
-		A SQLite wrapper class implemented in GDExtension.
+		一个在 GDExtension 中实现的 SQLite 包装类。
 	</brief_description>
 	<description>
-		[b]Example usage[/b]:
+		[b]用法示例[/b]:
 		[codeblock]
 		extends Node
 
@@ -24,7 +24,7 @@
 		    db.verbosity_level = SQLite.VerbosityLevel.NORMAL
 		    db.open_db()
 
-		    # Check if the table already exists or not.
+		    # 检查表是否已存在。
 		    db.query_with_bindings("SELECT name FROM sqlite_master WHERE type='table' AND name=?;", [table_name])
 		    if not db.query_result.is_empty():
 		        db.drop_table(table_name)
@@ -43,77 +43,76 @@
 		[/codeblock]
 	</description>
 	<tutorials>
-		<link title="Repository's README.md">https://github.com/2shady4u/godot-sqlite/blob/master/README.md</link>
-		<link title="Script containing multiple usage examples">https://github.com/2shady4u/godot-sqlite/blob/master/demo/database.gd</link>
+		<link title="仓库的 README.md">https://github.com/2shady4u/godot-sqlite/blob/master/README.md</link>
+		<link title="包含多个用法示例的脚本">https://github.com/2shady4u/godot-sqlite/blob/master/demo/database.gd</link>
 	</tutorials>
 	<methods>
 		<method name="open_db">
 			<return type="bool" />
 			<description>
-				Open a new database connection. Multiple concurrently open connections to the same database are possible.
+				打开一个新的数据库连接。可以同时打开多个到同一数据库的连接。
 			</description>
 		</method>
 		<method name="close_db">
 			<return type="bool" />
 			<description>
-				Close the current database connection.
+				关闭当前的数据库连接。
 			</description>
 		</method>
 		<method name="query">
 			<return type="bool" />
 			<description>
-				Query the database using the raw SQL statement defined in [code]query_string[/code].
+				使用 [code]query_string[/code] 中定义的原始 SQL 语句查询数据库。
 			</description>
 		</method>
 		<method name="query_with_bindings">
 			<return type="bool" />
 			<description>
-				Binds the parameters contained in the [code]param_bindings[/code]-variable to the query. Using this function stops any possible attempts at SQL data injection as the parameters are sanitized. More information regarding parameter bindings can be found [url=https://www.sqlite.org/c3ref/bind_blob.html]here[/url].
-				[b]Example usage[/b]:
+				将 [code]param_bindings[/code] 变量中包含的参数绑定到查询中。使用此函数可以防止任何可能的 SQL 数据注入尝试，因为参数会被净化。更多关于参数绑定的信息可以在[url=https://www.sqlite.org/c3ref/bind_blob.html]这里[/url]找到。
+				[b]用法示例[/b]:
 				[codeblock]
 				var column_name : String = "name"
 				var query_string : String = "SELECT %s FROM company WHERE age &lt; ?;" % [column_name]
 				var param_bindings : Array = [24]
 				var success = db.query_with_bindings(query_string, param_bindings)
-				# Executes following query: 
+				# 执行以下查询：
 				# SELECT name FROM company WHERE age &lt; 24;
 				[/codeblock]
-				Using bindings is optional, except for PackedByteArray (= raw binary data) which has to binded to allow the insertion and selection of BLOB data in the database.
-				[i][b]NOTE:[/b] Binding column names is not possible due to SQLite restrictions. If dynamic column names are required, insert the column name directly into the [code]query_string[/code]-variable itself (see [url=https://github.com/2shady4u/godot-sqlite/issues/41]https://github.com/2shady4u/godot-sqlite/issues/41[/url]).[/i]
+				使用绑定是可选的，但 PackedByteArray（即原始二进制数据）除外，它必须被绑定以允许在数据库中插入和选择 BLOB 数据。
+				[i][b]注意：[/b] 由于 SQLite 的限制，无法绑定列名。如果需要动态列名，请将列名直接插入到 [code]query_string[/code] 变量本身中（参见 [url=https://github.com/2shady4u/godot-sqlite/issues/41]https://github.com/2shady4u/godot-sqlite/issues/41[/url]）。[/i]
 			</description>
 		</method>
 		<method name="create_table">
 			<return type="bool" />
 			<description>
-				Each key/value pair of the [code]table_dictionary[/code]-variable defines a column of the table. Each key defines the name of a column in the database, while the value is a dictionary that contains further column specifications.
-				[b]Required fields[/b]:
-				- [b]"data_type"[/b]: type of the column variable, following values are valid*:
+				[code]table_dictionary[/code] 变量的每个键/值对定义了表的一列。每个键定义了数据库中一列的名称，而值是一个包含更多列规范的字典。
+				[b]必填字段[/b]:
+				- [b]"data_type"[/b]: 列变量的类型，以下值为有效值*:
 				    - "int" (SQLite: INTEGER, GODOT: [constant TYPE_INT])[br]    - "real" (SQLite: REAL, GODOT: [constant TYPE_REAL])[br]    - "text" (SQLite: TEXT, GODOT: [constant TYPE_STRING])[br]    - "char(?)"** (SQLite: CHAR(?)**, GODOT: [constant TYPE_STRING])[br]    - "blob" (SQLite: BLOB, GODOT: [constant TYPE_PACKED_BYTE_ARRAY])
-				    * [i]Data types not found in this list throw an error and end up finalizing the current SQLite statement.[/i][br]    ** [i]with the question mark being replaced by the maximum amount of characters[/i]
-				[b]Optional fields[/b]:
-				- [b]"not_null"[/b] [i](default = false)[/i]: Is the NULL value an invalid value for this column?[br]- [b]"unique"[/b] [i](default = false)[/i]: Does the column have a unique constraint?[br]- [b]"default"[/b]: The default value of the column if not explicitly given.[br]- [b]"primary_key"[/b] [i](default = false)[/i]: Is this the primary key of this table?
-				    Multiple columns can be set as a primary key.
-				- [b]"auto_increment"[/b] [i](default = false)[/i]: Automatically increment this column when no explicit value is given. This auto-generated value will be one more (+1) than the largest value currently in use.
-				    [i][b]NOTE[/b]: Auto-incrementing a column only works when this column is the primary key and no other columns are primary keys![/i]
-				- [b]"foreign_key"[/b]: Enforce an "exist" relationship between tables by setting this variable to [code]foreign_table.foreign_column[/code]. In other words, when adding an additional row, the column value should be an existing value as found in the column with name [code]foreign_column[/code] of the table with name [code]foreign_table[/code].
-				    [i][b]NOTE[/b]: Availability of foreign keys has to be enabled by setting the [code]foreign_keys[/code]-variable to true BEFORE opening the database.[/i]
-				[b]Example usage[/b]:
+				    * [i]未在此列表中的数据类型会抛出错误并最终完成当前的 SQLite 语句。[/i][br]    ** [i]问号将被替换为最大字符数[/i]
+				[b]可选字段[/b]:
+				- [b]"not_null"[/b] [i](默认为 false)[/i]: NULL 值对此列是否为无效值？[br]- [b]"unique"[/b] [i](默认为 false)[/i]: 此列是否有唯一约束？[br]- [b]"default"[/b]: 如果未明确给出，则为列的默认值。[br]- [b]"primary_key"[/b] [i](默认为 false)[/i]: 这是此表的主键吗？可以将多个列设置为主键。
+				- [b]"auto_increment"[/b] [i](默认为 false)[/i]: 当没有明确给出值时，自动递增此列。这个自动生成的值将比当前使用的最大值大一（+1）。
+				    [i][b]注意[/b]: 自动递增一列仅在该列是主键且没有其他列是主键时才有效！[/i]
+				- [b]"foreign_key"[/b]: 通过将此变量设置为 [code]foreign_table.foreign_column[/code] 来强制表之间的“存在”关系。换句话说，当添加一个新行时，该列的值应该是表 [code]foreign_table[/code] 中名为 [code]foreign_column[/code] 的列中已存在的值。
+				    [i][b]注意[/b]: 必须在打开数据库之前通过将 [code]foreign_keys[/code] 变量设置为 true 来启用外键的可用性。[/i]
+				[b]用法示例[/b]:
 				[codeblock]
-				# Add the row "id" to the table, which is an auto-incremented primary key.
-				# When adding additional rows, this value can either by explicitely given or be unfilled.
+				# 将 "id" 行添加到表中，它是一个自动递增的主键。
+				# 添加新行时，此值可以明确给出，也可以不填写。
 				table_dictionary["id"] = {
 				    "data_type": "int", 
 				    "primary_key": true, 
 				    "auto_increment": true
 				}
 				[/codeblock]
-				For more concrete usage examples see the [code]database.gd[/code]-file as found [url=https://github.com/2shady4u/godot-sqlite/blob/master/demo/database.gd]here[url].
+				更多具体用法示例请参见[url=https://github.com/2shady4u/godot-sqlite/blob/master/demo/database.gd]此处[/url]的 [code]database.gd[/code] 文件。
 			</description>
 		</method>
 		<method name="drop_table">
 			<return type="bool" />
 			<description>
-				Drop the table with name [code]table_name[/code]. This method is equivalent to the following query:
+				删除名为 [code]table_name[/code] 的表。此方法等效于以下查询：
 				[codeblock]
 				db.query("DROP TABLE "+ table_name + ";")
 				[/codeblock]
@@ -122,100 +121,97 @@
 		<method name="insert_row">
 			<return type="bool" />
 			<description>
-				Each key/value pair of the [code]row_dictionary[/code]-variable defines the column values of a single row.
-				Columns should adhere to the table schema as instantiated using the [code]table_dictionary[/code]-variable and are required if their corresponding [b]"not_null"[/b]-column value is set to [code]True[/code].
+				[code]row_dictionary[/code] 变量的每个键/值对定义了单行的列值。列应遵守使用 [code]table_dictionary[/code] 变量实例化的表结构，如果其对应的 [b]"not_null"[/b] 列值设置为 [code]True[/code]，则这些列是必需的。
 			</description>
 		</method>
 		<method name="insert_rows">
 			<return type="bool" />
 			<description>
-				Insert multiple rows into the given table. The [code]row_array[/code] input argument should be an array of dictionaries where each element is defined as in [method insert_row].
+				向给定表中插入多行。输入参数 [code]row_array[/code] 应该是一个字典数组，其中每个元素的定义与 [method insert_row] 中相同。
 			</description>
 		</method>
 		<method name="select_rows">
 			<return type="Array" />
 			<description>
-				Returns the results from the latest query [b]by value[/b]; meaning that this property does not get overwritten by any successive queries.
+				按[b]值[/b]返回最新查询的结果；这意味着此属性不会被任何后续查询覆盖。
 			</description>
 		</method>
 		<method name="update_rows">
 			<return type="bool" />
 			<description>
-				With the [code]updated_row_dictionary[/code]-variable adhering to the same table schema &amp; conditions as the [code]row_dictionary[/code]-variable defined previously.
+				[code]updated_row_dictionary[/code] 变量遵守与先前定义的 [code]row_dictionary[/code] 变量相同的表结构和条件。
 			</description>
 		</method>
 		<method name="delete_rows">
 			<return type="bool" />
 			<description>
-				Delete all rows of the table that match the given conditions.
+				删除表中所有匹配给定条件的行。
 			</description>
 		</method>
 		<method name="import_from_json">
 			<return type="bool" />
 			<description>
-				Drops all database tables and imports the database structure and content present inside of [code]import_path.json[/code].
+				删除所有数据库表，并从 [code]import_path.json[/code] 中导入数据库结构和内容。
 			</description>
 		</method>
 		<method name="export_to_json">
 			<return type="bool" />
 			<description>
-				Exports the database structure and content to [code]export_path.json[/code] as a backup or for ease of editing.
+				将数据库结构和内容导出到 [code]export_path.json[/code] 以进行备份或方便编辑。
 			</description>
 		</method>
 		<method name="import_from_buffer">
 			<return type="bool" />
 			<description>
-				Drops all database tables and imports the database structure and content encoded in JSON-formatted input buffer.
-				Can be used together with [method SQLite.export_to_buffer] to implement database encryption.
+				删除所有数据库表，并从 JSON 格式的输入缓冲区中导入数据库结构和内容。可与 [method SQLite.export_to_buffer] 一起使用以实现数据库加密。
 			</description>
 		</method>
 		<method name="export_to_buffer">
 			<return type="PackedByteArray" />
 			<description>
-				Returns the database structure and content as JSON-formatted buffer.
-				Can be used together with [method SQLite.import_from_buffer] to implement database encryption.
+				以 JSON 格式的缓冲区返回数据库结构和内容。可与 [method SQLite.import_from_buffer] 一起使用以实现数据库加密。
 			</description>
 		</method>
 		<method name="create_function">
 			<return type="bool" />
 			<description>
-				Bind a [url=https://www.sqlite.org/appfunc.html]scalar SQL function[/url] to the database that can then be used in subsequent queries.
+				将一个[url=https://www.sqlite.org/appfunc.html]标量 SQL 函数[/url]绑定到数据库，以便在后续查询中使用。
 			</description>
 		</method>
 		<method name="get_autocommit">
 			<return type="int" />
 			<description>
-				Check if the given database connection is or is not in autocommit mode, see [url=https://sqlite.org/c3ref/get_autocommit.html]here[/url].
+				检查给定的数据库连接是否处于自动提交模式，请参阅[url=https://sqlite.org/c3ref/get_autocommit.html]此处[/url]。
 			</description>
 		</method>
 		<method name="backup_to">
 			<return type="bool" />
 			<description>
-				Backup the current database to a path, see [url=https://www.sqlite.org/backup.html]here[/url]. This feature is useful if you are using a database as your save file and you want to easily implement a saving mechanic.
+				将当前数据库备份到指定路径，请参阅[url=https://www.sqlite.org/backup.html]此处[/url]。如果您使用数据库作为存档文件，并希望轻松实现保存机制，此功能非常有用。
 			</description>
 		</method>
 		<method name="restore_from">
 			<return type="bool" />
 			<description>
-				Restore the current database from a path, see [url=https://www.sqlite.org/backup.html]here[/url]. This feature is useful if you are using a database as your save file and you want to easily implement a loading mechanic. Be warned that the original database will be overwritten entirely when restoring.
+				从指定路径还原当前数据库，请参阅[url=https://www.sqlite.org/backup.html]此处[/url]。如果您使用数据库作为存档文件，并希望轻松实现加载机制，此功能非常有用。请注意，还原时将完全覆盖原始数据库。
 			</description>
 		</method>
 		<method name="compileoption_used">
 			<return type="bool" />
 			<description>
-				Check if the binary was compiled using the specified option, see [url=https://sqlite.org/c3ref/compileoption_get.html]here[/url].
-				Mostly relevant for checking if the [url=https://sqlite.org/fts5.html]SQLite FTS5 Extension[/url] is enabled, in which case the following lines can be used:
+				检查二进制文件是否使用了指定的选项进行编译，请参阅[url=https://sqlite.org/c3ref/compileoption_get.html]此处[/url]。
+				主要用于检查 [url=https://sqlite.org/fts5.html]SQLite FTS5 扩展[/url] 是否已启用，在这种情况下，可以使用以下代码行：
 				[codeblock]
-				db.compileoption_used("SQLITE_ENABLE_FTS5") # Returns '1' if enabled or '0' if disabled
-				db.compileoption_used("ENABLE_FTS5") # The "SQLITE_"-prefix may be omitted.
+				db.compileoption_used("SQLITE_ENABLE_FTS5") # 如果启用则返回 '1'，如果禁用则返回 '0'
+				db.compileoption_used("ENABLE_FTS5") # "SQLITE_" 前缀可以省略。
 				[/codeblock]
 			</description>
 		</method>
 		<method name="enable_load_extension">
 			<return type="int" />
 			<description>
-				[url=https://www.sqlite.org/c3ref/load_extension.html]Extension loading[/url] is disabled by default for security reasons. There are two ways to load an extension: C-API and SQL function. This method turns on both options.
-				SQL function [code]load_extension()[/code] can only be used after enabling extension loading with this method. Preferably should be disabled after loading the extension to prevent SQL injections. Returns the SQLite return code.
+				[url=https://www.sqlite.org/c3ref/load_extension.html]扩展加载[/url]默认是禁用的，以确保安全。有两种加载扩展的方式：C-API 和 SQL 函数。此方法会同时启用这两种选项。
+				SQL 函数 [code]load_extension()[/code] 只有在使用此方法启用扩展加载后才能使用。最好在加载扩展后禁用它，以防止 SQL 注入。返回 SQLite 返回码。
 				
 				[codeblock]
 				var module_path = ProjectSettings.globalize_path("res://addons/godot-sqlite/extensions/spellfix.dll")
@@ -232,10 +228,10 @@
 		<method name="load_extension">
 			<return type="int" />
 			<description>
-				Loads the extension in the given path. Does not require [method SQLite.enable_load_extension], as it only enables C-API during the call and disables it right after, utilizing the recommended extension loading method declared by the SQLite documentation ([url=https://www.sqlite.org/c3ref/load_extension.html]see[/url]). Returns the SQLite return code.
-				- [b]extension_path:[/b] the path to the compiled binary of the extension
-				- [b]entrypoint:[/b] the extension's entrypoint method (init function). It is defined in the .c file of the extension. 
-				Example for loading the spellfix module:
+				加载给定路径中的扩展。不需要 [method SQLite.enable_load_extension]，因为它仅在调用期间启用 C-API，并在之后立即禁用，利用了 SQLite 文档声明的推荐扩展加载方法（[url=https://www.sqlite.org/c3ref/load_extension.html]见[/url]）。返回 SQLite 返回码。
+				- [b]extension_path:[/b] 扩展的已编译二进制文件的路径
+				- [b]entrypoint:[/b] 扩展的入口点方法（初始化函数）。它在扩展的 .c 文件中定义。
+				加载 spellfix 模块的示例：
 				[codeblock]
 				db.load_extension("res://addons/godot-sqlite/extensions/spellfix.dll", "sqlite3_spellfix_init")
 				[/codeblock]
@@ -244,50 +240,49 @@
 	</methods>
 	<members>
 		<member name="path" type="String" default="default">
-			Path to the database, should be set before opening the database with [code]open_db()[/code]. If no database with this name exists, a new one at the supplied path will be created. Both [code]res://[/code] and [code]user://[/code] keywords can be used to define the path.
+			数据库的路径，应在用 [code]open_db()[/code] 打开数据库之前设置。如果不存在具有此名称的数据库，则将在提供的路径上创建一个新数据库。可以使用 [code]res://[/code] 和 [code]user://[/code] 关键字来定义路径。
 		</member>
 		<member name="error_message" type="String" default="&quot;&quot;">
-			Contains the zErrMsg returned by the SQLite query in human-readable form. An empty string corresponds with the case in which the query executed succesfully.
+			包含 SQLite 查询以人类可读形式返回的 zErrMsg。空字符串对应于查询成功执行的情况。
 		</member>
 		<member name="default_extension" type="String" default="db">
-			Default extension that is automatically appended to the [code]path[/code]-variable whenever [b]no[/b] extension is detected/given.
-			[i][b]NOTE:[/b] If database files without extension are desired, this variable has to be set to "" (= an empty string) as to skip this automatic procedure entirely.[/i]
+			当[b]没有[/b]检测到或给出扩展名时，自动附加到 [code]path[/code] 变量的默认扩展名。
+			[i][b]注意：[/b]如果需要不带扩展名的数据库文件，则必须将此变量设置为空字符串 ""，以完全跳过此自动过程。[/i]
 		</member>
 		<member name="foreign_keys" type="bool" default="false">
-			Enables or disables the availability of [url=https://www.sqlite.org/foreignkeys.html]foreign keys[/url] in the SQLite database.
+			在 SQLite 数据库中启用或禁用[url=https://www.sqlite.org/foreignkeys.html]外键[/url]的可用性。
 		</member>
 		<member name="read_only" type="bool" default="false">
-			Enabling this property opens the database in read-only modus &amp; allows databases to be packaged inside of the PCK. To make this possible, a custom [url=https://www.sqlite.org/vfs.html]VFS[/url] is employed which internally takes care of all the file handling using the Godot API.
+			启用此属性会以只读模式打开数据库，并允许将数据库打包到 PCK 文件中。为了实现这一点，采用了一个自定义的 [url=https://www.sqlite.org/vfs.html]VFS[/url]，它在内部使用 Godot API 处理所有文件操作。
 		</member>
 		<member name="query_result" type="Array" default="[]">
-			Contains the results from the latest query [b]by value[/b]; meaning that this property is safe to use when looping successive queries as it does not get overwritten by any future queries.
+			按[b]值[/b]包含最新查询的结果；这意味着在循环连续查询时可以安全使用此属性，因为它不会被任何将来的查询覆盖。
 		</member>
 		<member name="query_result_by_reference" type="Array" default="[]">
-			Contains the results from the latest query [b]by reference[/b] and is, as a direct result, cleared and repopulated after every new query.
+			按[b]引用[/b]包含最新查询的结果，因此，在每次新查询后都会被清除和重新填充。
 		</member>
 		<member name="last_insert_rowid" type="int" default="0">
-			Exposes the [code]sqlite3_last_insert_rowid()[/code]-method to Godot as described [url=https://www.sqlite.org/c3ref/last_insert_rowid.html]here[/url].
-			Attempting to modify this variable directly is forbidden and throws an error.
+			将 [code]sqlite3_last_insert_rowid()[/code] 方法暴露给 Godot，如[url=https://www.sqlite.org/c3ref/last_insert_rowid.html]此处[/url]所述。禁止直接修改此变量，否则会引发错误。
 		</member>
 		<member name="verbosity_level" type="int" default="1">
-			The verbosity_level determines the amount of logging to the Godot console that is handy for debugging your (possibly faulty) SQLite queries.
-			[i][b]NOTE:[/b] [constant VERBOSE] and higher levels might considerably slow down your queries due to excessive logging.[/i]
+			verbosity_level 决定了向 Godot 控制台输出的日志量，这对于调试您（可能有问题的）SQLite 查询非常方便。
+			[i][b]注意：[/b] [constant VERBOSE] 及更高级别可能会因过多的日志记录而显著减慢您的查询速度。[/i]
 		</member>
 	</members>
 	<signals>
 	</signals>
 	<constants>
 		<constant name="QUIET" value="0">
-			Don't print anything to the console.
+			不在控制台打印任何内容。
 		</constant>
 		<constant name="NORMAL" value="1">
-			Print essential information to the console.
+			在控制台打印基本信息。
 		</constant>
 		<constant name="VERBOSE" value="2">
-			Print additional information to the console.
+			在控制台打印附加信息。
 		</constant>
 		<constant name="VERY_VERBOSE" value="3">
-			Same as [constant VERBOSE].
+			与 [constant VERBOSE] 相同。
 		</constant>
 	</constants>
 </class>
